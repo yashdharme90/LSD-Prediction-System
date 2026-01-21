@@ -1,0 +1,107 @@
+# ===============================
+# Python cache & system files
+# ===============================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ===============================
+# Virtual Environment
+# ===============================
+myenv/
+venv/
+env/
+
+# ===============================
+# VS Code settings
+# ===============================
+.vscode/
+
+# ===============================
+# ML / AI Model Files (VERY IMPORTANT)
+# ===============================
+*.h5
+*.keras
+*.pkl
+
+# ===============================
+# Trained / Combined Models
+# ===============================
+model.*
+image_model.*
+medical_model.*
+medical_scaler.*
+
+# ===============================
+# Data files (if added later)
+# ===============================
+*.csv
+*.zip
+data/
+
+# ===============================
+# OS files
+# ===============================
+.DS_Store
+Thumbs.db
+
+# ===============================
+# Logs & temp
+# ===============================
+*.log
+
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environment (VERY IMPORTANT)
+myenv/
+venv/
+env/
+
+# ML models
+*.h5
+*.keras
+*.pkl
+
+# Data
+*.csv
+*.zip
+data/
+
+# IDE
+.vscode/
+
+
+
+# Python cache
+__pycache__/
+*.pyc
+
+# VS Code
+.vscode/
+
+
+# Virtual environments
+myenv/
+venv/
+env/
+
+# ML models
+*.h5
+*.keras
+*.pkl
+
+# Python cache
+__pycache__/
+*.pyc
+
+# IDE
+.vscode/
+
+# Data
+data/
+*.csv
+*.zip
