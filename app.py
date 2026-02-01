@@ -4,19 +4,63 @@ import numpy as np
 import joblib
 import cv2
 import os
+import gdown
 from werkzeug.utils import secure_filename
 
 # Initialize Flask app
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
+
 # -----------------------------
 # Load all required models
 # -----------------------------
-image_model = load_model("image_model.h5", compile=False)  # CNN/MobileNet model
-medical_model = joblib.load("medical_model.pkl")           # ML model
-fusion_model = joblib.load("model.pkl")                    # Optional (for late fusion, not used here)
-medical_scaler = joblib.load("medical_scaler.pkl")         # Scaler used during training
+
+# ===== IMAGE MODEL (CNN) =====
+IMAGE_MODEL_PATH = "image_model.h5"
+IMAGE_FILE_ID = "1oGJOXkSVakBCLJio1ZfF9w8pYQLtjaoP"
+IMAGE_URL = f"https://drive.google.com/uc?export=download&id={IMAGE_FILE_ID}"
+
+if not os.path.exists(IMAGE_MODEL_PATH):
+    print("Downloading image model from Google Drive...")
+    gdown.download(IMAGE_URL, IMAGE_MODEL_PATH, quiet=False)
+
+image_model = load_model(IMAGE_MODEL_PATH, compile=False)
+
+
+# ===== MEDICAL MODEL =====
+MEDICAL_MODEL_PATH = "medical_model.pkl"
+MEDICAL_FILE_ID = "1ENkUXXKllCi02M2ri72qfhC1Shuaz5ZB"
+MEDICAL_URL = f"https://drive.google.com/uc?export=download&id={MEDICAL_FILE_ID}"
+
+if not os.path.exists(MEDICAL_MODEL_PATH):
+    print("Downloading medical model from Google Drive...")
+    gdown.download(MEDICAL_URL, MEDICAL_MODEL_PATH, quiet=False)
+
+medical_model = joblib.load(MEDICAL_MODEL_PATH)
+
+
+# ===== MEDICAL SCALER =====
+SCALER_PATH = "medical_scaler.pkl"
+SCALER_FILE_ID = "1frkGHa74b1Qm-gx_3HmzCaJWIxhWSLuz"
+SCALER_URL = f"https://drive.google.com/uc?export=download&id={SCALER_FILE_ID}"
+
+if not os.path.exists(SCALER_PATH):
+    print("Downloading medical scaler from Google Drive...")
+    gdown.download(SCALER_URL, SCALER_PATH, quiet=False)
+
+medical_scaler = joblib.load(SCALER_PATH)
+
+
+
+
+# (Optional) Fusion model if you really use it
+# fusion_model = joblib.load("model.pkl")
+
+
+
+# fusion_model = joblib.load("model.pkl")                    # Optional (for late fusion, not used here)
+# medical_scaler = joblib.load("medical_scaler.pkl")         # Scaler used during training
 
 # -----------------------------
 # Image preprocessing function
@@ -85,7 +129,12 @@ def predict():
 # -----------------------------
 # Run the app
 # -----------------------------
-if __name__ == '__main__':
-    app.run(debug=True)
+# if __name__ == '__main__':
+#     app.run(debug=True)
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
+
 
 
