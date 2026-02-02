@@ -11,12 +11,17 @@ using medical data and cattle images.
 - Web interface for easy usage
 
 ## 🛠️ Technologies Used
-- Python
-- TensorFlow / Keras
-- OpenCV
-- Scikit-learn
-- Flask
-- HTML, CSS, JavaScript
+- Programming Language: Python
+- Web Framework: Flask
+- Deep Learning: TensorFlow, Keras
+- Machine Learning: scikit-learn
+- Image Processing: OpenCV
+- Numerical Computing: NumPy
+- Model Serialization: Joblib
+- Frontend: HTML5, CSS3
+- Deployment & Hosting: Render
+- Web Server: Gunicorn
+- Version Control: Git, GitHub
 
 ## 📊 Model Accuracy
 - Achieved over 85% accuracy in disease prediction
