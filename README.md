@@ -36,6 +36,13 @@ Pre-trained CNN and ML models are available here:
 https://drive.google.com/drive/folders/1hx8ujMhW3-X20jCGi9oru1ZQz047GrQP?usp=sharing
 
 ## ▶️ How to Run the Project
-```bash
 pip install -r requirements.txt
 python app.py
+
+🌐 Live Deployment
+🚀 Live App:
+👉 https://lsd-prediction-system-qumz.onrender.com
+
+👨‍💻 Developer
+    Yash Dharme
+    AI / ML & Full-Stack Developer
