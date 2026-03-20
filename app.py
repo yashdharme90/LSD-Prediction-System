@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 from tensorflow.keras.models import load_model
+from tensorflow.keras.layers import InputLayer
 import numpy as np
 import joblib
 import cv2
@@ -36,15 +37,11 @@ def load_models():
         if not os.path.exists(IMAGE_MODEL_PATH):
             gdown.download(IMAGE_URL, IMAGE_MODEL_PATH, quiet=False, fuzzy=True)
 
-        try:
-            image_model = tf.keras.models.load_model(
-                IMAGE_MODEL_PATH,
-                compile=False,
-                safe_mode=False 
-            )
-        except Exception as e:
-            print("Model loading failed:", e)
-            raise Exception("Image model not compatible. Please retrain or convert.")
+        image_model = load_model(
+            IMAGE_MODEL_PATH,
+            compile=False,
+            custom_objects={'InputLayer': InputLayer}
+        )
 
         if not os.path.exists(MEDICAL_MODEL_PATH):
             gdown.download(MEDICAL_URL, MEDICAL_MODEL_PATH, quiet=False)
