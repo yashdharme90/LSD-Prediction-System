@@ -1,19 +1,15 @@
 from flask import Flask, render_template, request
 from tensorflow.keras.models import load_model
-from tensorflow.keras.layers import InputLayer
 import numpy as np
 import joblib
 import cv2
 import os
 import gdown
 from werkzeug.utils import secure_filename
-import tensorflow as tf
 
 # Initialize Flask app
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
-
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 IMAGE_MODEL_PATH = "image_model.h5"
 IMAGE_URL = "https://drive.google.com/uc?export=download&id=1oGJOXkSVakBCLJio1ZfF9w8pYQLtjaoP"
@@ -24,9 +20,11 @@ MEDICAL_URL = "https://drive.google.com/uc?export=download&id=1ENkUXXKllCi02M2ri
 SCALER_PATH = "medical_scaler.pkl"
 SCALER_URL = "https://drive.google.com/uc?export=download&id=1frkGHa74b1Qm-gx_3HmzCaJWIxhWSLuz"
 
+
 image_model = None
 medical_model = None
 medical_scaler = None
+
 
 def load_models():
     global image_model, medical_model, medical_scaler
@@ -35,13 +33,8 @@ def load_models():
         print("Loading models...")
 
         if not os.path.exists(IMAGE_MODEL_PATH):
-            gdown.download(IMAGE_URL, IMAGE_MODEL_PATH, quiet=False, fuzzy=True)
-
-        image_model = load_model(
-            IMAGE_MODEL_PATH,
-            compile=False,
-            custom_objects={'InputLayer': InputLayer}
-        )
+            gdown.download(IMAGE_URL, IMAGE_MODEL_PATH, quiet=False)
+        image_model = load_model(IMAGE_MODEL_PATH, compile=False)
 
         if not os.path.exists(MEDICAL_MODEL_PATH):
             gdown.download(MEDICAL_URL, MEDICAL_MODEL_PATH, quiet=False)
@@ -50,7 +43,7 @@ def load_models():
         if not os.path.exists(SCALER_PATH):
             gdown.download(SCALER_URL, SCALER_PATH, quiet=False)
         medical_scaler = joblib.load(SCALER_PATH)
-        
+
 
 @app.route("/health")
 def health():
@@ -64,28 +57,21 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    load_models()
-
-    if 'image' not in request.files:
-        return "No image uploaded", 400
+    load_models()  # <-- THIS IS THE KEY LINE
 
     image_file = request.files['image']
 
-    if image_file.filename == "":
-        return "No file selected", 400
-
     filename = secure_filename(image_file.filename)
 
+    # 1️⃣ Filesystem path (for OpenCV)
     save_path = os.path.join("static", "uploads", filename)
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
     image_file.save(save_path)
 
+    # 2️⃣ URL path (for browser)
     image_url = f"/static/uploads/{filename}"
 
+    # Read image correctly
     img = cv2.imread(save_path)
-
-    if img is None:
-        return "Invalid image file", 400
 
     img = cv2.resize(img, (128, 128))
     img = img / 255.0
@@ -93,20 +79,29 @@ def predict():
 
     preds_img = image_model.predict(img)
 
-    temp = float(request.form.get('Temperature', 0))
+    temp = float(request.form['Temperature'])
 
-    swell = 1.0 if request.form.get('Swelling', '').lower() == "yes" else 0.0
-    nasal = 1.0 if request.form.get('Nasal_Discharge', '').lower() == "yes" else 0.0
-    skin  = 1.0 if request.form.get('Skin_Nodules', '').lower() == "yes" else 0.0
-    eye   = 1.0 if request.form.get('Eye_Discharge', '').lower() == "yes" else 0.0
+    swell = 1.0 if request.form['Swelling'].lower() == "yes" else 0.0
+    nasal = 1.0 if request.form['Nasal_Discharge'].lower() == "yes" else 0.0
+    skin  = 1.0 if request.form['Skin_Nodules'].lower() == "yes" else 0.0
+    eye   = 1.0 if request.form['Eye_Discharge'].lower() == "yes" else 0.0
 
-    appetite = request.form.get('Appetite_Level', '').lower()
+    appetite = request.form['Appetite_Level'].lower()
 
     app_high = 1.0 if appetite == "high" else 0.0
     app_low = 1.0 if appetite == "low" else 0.0
     app_norm = 1.0 if appetite == "normal" else 0.0
 
-    med_input = np.array([[temp, swell, nasal, skin, eye, app_high, app_low, app_norm]])
+    med_input = np.array([[
+        temp,
+        swell,
+        nasal,
+        skin,
+        eye,
+        app_high,
+        app_low,
+        app_norm
+    ]])
 
     med_scaled = medical_scaler.transform(med_input)
     preds_med = medical_model.predict(med_scaled)
@@ -124,6 +119,5 @@ def predict():
     )
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-
