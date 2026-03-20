@@ -6,6 +6,7 @@ import cv2
 import os
 import gdown
 from werkzeug.utils import secure_filename
+import tensorflow as tf
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -33,8 +34,17 @@ def load_models():
         print("Loading models...")
 
         if not os.path.exists(IMAGE_MODEL_PATH):
-            gdown.download(IMAGE_URL, IMAGE_MODEL_PATH, quiet=False)
-        image_model = load_model(IMAGE_MODEL_PATH, compile=False)
+            gdown.download(IMAGE_URL, IMAGE_MODEL_PATH, quiet=False, fuzzy=True)
+
+        try:
+            image_model = tf.keras.models.load_model(
+                IMAGE_MODEL_PATH,
+                compile=False,
+                safe_mode=False 
+            )
+        except Exception as e:
+            print("Model loading failed:", e)
+            raise Exception("Image model not compatible. Please retrain or convert.")
 
         if not os.path.exists(MEDICAL_MODEL_PATH):
             gdown.download(MEDICAL_URL, MEDICAL_MODEL_PATH, quiet=False)
@@ -43,7 +53,7 @@ def load_models():
         if not os.path.exists(SCALER_PATH):
             gdown.download(SCALER_URL, SCALER_PATH, quiet=False)
         medical_scaler = joblib.load(SCALER_PATH)
-
+        
 
 @app.route("/health")
 def health():
@@ -57,23 +67,28 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    load_models()  
+    load_models()
+
+    if 'image' not in request.files:
+        return "No image uploaded", 400
 
     image_file = request.files['image']
 
+    if image_file.filename == "":
+        return "No file selected", 400
+
     filename = secure_filename(image_file.filename)
 
-    # Filesystem path (for OpenCV)
     save_path = os.path.join("static", "uploads", filename)
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
     image_file.save(save_path)
 
-    # URL path (for browser)
     image_url = f"/static/uploads/{filename}"
 
-    # Read image correctly
     img = cv2.imread(save_path)
+
     if img is None:
-        return "Error: Image not loaded properly", 400
+        return "Invalid image file", 400
 
     img = cv2.resize(img, (128, 128))
     img = img / 255.0
@@ -81,30 +96,20 @@ def predict():
 
     preds_img = image_model.predict(img)
 
-    temp = float(request.form['Temperature'])
+    temp = float(request.form.get('Temperature', 0))
 
-    swell = 1.0 if request.form['Swelling'].lower() == "yes" else 0.0
-    nasal = 1.0 if request.form['Nasal_Discharge'].lower() == "yes" else 0.0
-    skin  = 1.0 if request.form['Skin_Nodules'].lower() == "yes" else 0.0
-    eye   = 1.0 if request.form['Eye_Discharge'].lower() == "yes" else 0.0
+    swell = 1.0 if request.form.get('Swelling', '').lower() == "yes" else 0.0
+    nasal = 1.0 if request.form.get('Nasal_Discharge', '').lower() == "yes" else 0.0
+    skin  = 1.0 if request.form.get('Skin_Nodules', '').lower() == "yes" else 0.0
+    eye   = 1.0 if request.form.get('Eye_Discharge', '').lower() == "yes" else 0.0
 
-    appetite = request.form['Appetite_Level'].lower()
+    appetite = request.form.get('Appetite_Level', '').lower()
 
     app_high = 1.0 if appetite == "high" else 0.0
     app_low = 1.0 if appetite == "low" else 0.0
     app_norm = 1.0 if appetite == "normal" else 0.0
 
-    med_input = np.array([[
-        temp,
-        swell,
-        nasal,
-        skin,
-        eye,
-        app_high,
-        app_low,
-        app_norm
-    ]])
-
+    med_input = np.array([[temp, swell, nasal, skin, eye, app_high, app_low, app_norm]])
 
     med_scaled = medical_scaler.transform(med_input)
     preds_med = medical_model.predict(med_scaled)
@@ -120,7 +125,6 @@ def predict():
         prediction=f"{result} ({prob:.2f})",
         image_path=image_url
     )
-
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
