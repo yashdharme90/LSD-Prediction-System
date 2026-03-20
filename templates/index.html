@@ -1,153 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>LSD Prediction System</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 0;
-      padding: 20px;
-    }
+<meta charset="UTF-8">
+<title>LSD AI Detection</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    h1 {
-      color: #2d3436;
-    }
-
-    form {
-      background: #ffffff;
-      padding: 25px;
-      border-radius: 10px;
-      width: 100%;
-      max-width: 600px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 10px;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-
-    button {
-      margin-top: 20px;
-      width: 100%;
-      padding: 12px;
-      background: #0984e3;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #74b9ff;
-    }
-
-    .result {
-      margin-top: 25px;
-      background: #dfe6e9;
-      padding: 15px;
-      border-radius: 8px;
-      width: 100%;
-      max-width: 600px;
-      text-align: center;
-      font-size: 18px;
-    }
-
-    .image-box {
-      margin-top: 20px;
-      text-align: center;
-    }
-
-    .image-box img {
-      max-width: 400px;
-      border-radius: 10px;
-      border: 2px solid #ccc;
-    }
-
-    footer {
-      margin-top: 40px;
-      font-size: 14px;
-      color: #636e72;
-    }
-  </style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
+
 <body>
 
-  <h1>🐄 Lumpy Skin Disease (LSD) Prediction</h1>
+<div class="main">
 
-  <form action="/predict" method="POST" enctype="multipart/form-data">
+<header>
+  <h1>🐄 Lumpy Skin Disease Prediction System</h1>
+</header>
 
-    <label>Upload Cattle Image</label>
-    <input type="file" name="image" accept="image/*" required>
+<!-- FORM CARD -->
+<div class="card">
+<form action="/predict" method="POST" enctype="multipart/form-data">
 
-    <label>Temperature (°F)</label>
-    <input type="number" step="0.1" name="Temperature" required>
+<label>Upload Image</label>
+<input type="file" name="image" required>
 
-    <label>Swelling</label>
-    <select name="Swelling" required>
-      <option value="Yes">Yes</option>
-      <option value="No">No</option>
-    </select>
+<label>Temperature (°F)</label>
+<input type="number" step="0.1" name="Temperature" required>
 
-    <label>Nasal Discharge</label>
-    <select name="Nasal_Discharge" required>
-      <option value="Yes">Yes</option>
-      <option value="No">No</option>
-    </select>
+<label>Swelling</label>
+<select name="Swelling" required>
+<option value="" disabled selected>Select</option>
+<option>Yes</option>
+<option>No</option>
+</select>
 
-    <label>Eye Discharge</label>
-    <select name="Eye_Discharge" required>
-      <option value="Yes">Yes</option>
-      <option value="No">No</option>
-    </select>
+<label>Nasal Discharge</label>
+<select name="Nasal_Discharge" required>
+<option value="" disabled selected>Select</option>
+<option>Yes</option>
+<option>No</option>
+</select>
 
-    <label>Skin Nodules</label>
-    <select name="Skin_Nodules" required>
-      <option value="Yes">Yes</option>
-      <option value="No">No</option>
-    </select>
+<label>Eye Discharge</label>
+<select name="Eye_Discharge" required>
+<option value="" disabled selected>Select</option>
+<option>Yes</option>
+<option>No</option>
+</select>
 
-    <label>Appetite Level</label>
-    <select name="Appetite_Level" required>
-      <option value="High">High</option>
-      <option value="Normal">Normal</option>
-      <option value="Low">Low</option>
-    </select>
+<label>Skin Nodules</label>
+<select name="Skin_Nodules" required>
+<option value="" disabled selected>Select</option>
+<option>Yes</option>
+<option>No</option>
+</select>
 
-    <button type="submit">Predict LSD</button>
-  </form>
+<label>Appetite Level</label>
+<select name="Appetite_Level" required>
+<option value="" disabled selected>Select</option>
+<option>High</option>
+<option>Normal</option>
+<option>Low</option>
+</select>
 
-  {% if prediction %}
-    <div class="result">
-      <strong>Prediction:</strong> {{ prediction }}
-    </div>
-  {% endif %}
+<button type="submit">🚀 Predict</button>
 
-  {% if image_path %}
-    <div class="image-box">
-      <h3>Uploaded Cattle Image</h3>
-      <img src="{{ image_path }}" alt="Uploaded Image">
-    </div>
-  {% endif %}
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <p>Analyzing...</p>
+</div>
 
-  <footer>
-    © 2025 LSD Prediction System | Developed by Yash Dharme
-  </footer>
+</form>
+</div>
+
+<!-- RESULT -->
+{% if prediction %}
+<div class="card">
+
+<div class="result {% if 'Positive' in prediction %}positive{% else %}negative{% endif %}">
+  {{ prediction }}
+</div>
+
+{% set conf = prediction.split('(')[1].replace(')','') | float %}
+
+<div class="conf-container">
+  <div class="conf-bar" style="width: {{ conf * 100 }}%;">
+    Confidence {{ (conf * 100)|round(2) }}%
+  </div>
+</div>
+
+{% if image_path %}
+<div class="image-box">
+  <h3>Uploaded Image</h3>
+  <img src="{{ image_path }}">
+</div>
+{% endif %}
+
+</div>
+{% endif %}
+
+</div>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
 </body>
 </html>

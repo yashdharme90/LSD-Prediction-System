@@ -11,8 +11,6 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
-
-
 IMAGE_MODEL_PATH = "image_model.h5"
 IMAGE_URL = "https://drive.google.com/uc?export=download&id=1oGJOXkSVakBCLJio1ZfF9w8pYQLtjaoP"
 
@@ -22,11 +20,9 @@ MEDICAL_URL = "https://drive.google.com/uc?export=download&id=1ENkUXXKllCi02M2ri
 SCALER_PATH = "medical_scaler.pkl"
 SCALER_URL = "https://drive.google.com/uc?export=download&id=1frkGHa74b1Qm-gx_3HmzCaJWIxhWSLuz"
 
-
 image_model = None
 medical_model = None
 medical_scaler = None
-
 
 def load_models():
     global image_model, medical_model, medical_scaler
@@ -57,26 +53,23 @@ def home():
     return render_template('index.html')
 
 
-
 @app.route('/predict', methods=['POST'])
 def predict():
-    load_models()  # <-- THIS IS THE KEY LINE
+    load_models()  
 
     image_file = request.files['image']
 
     filename = secure_filename(image_file.filename)
 
-    # 1️⃣ Filesystem path (for OpenCV)
+    # Filesystem path (for OpenCV)
     save_path = os.path.join("static", "uploads", filename)
     image_file.save(save_path)
 
-    # 2️⃣ URL path (for browser)
+    # URL path (for browser)
     image_url = f"/static/uploads/{filename}"
 
     # Read image correctly
     img = cv2.imread(save_path)
-
-
 
     img = cv2.resize(img, (128, 128))
     img = img / 255.0
@@ -109,7 +102,6 @@ def predict():
     ]])
 
 
-    
     med_scaled = medical_scaler.transform(med_input)
     preds_med = medical_model.predict(med_scaled)
 
@@ -126,8 +118,6 @@ def predict():
     )
 
 
-
-
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
+    port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
