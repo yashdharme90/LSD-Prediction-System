@@ -72,6 +72,8 @@ def predict():
 
     # Read image correctly
     img = cv2.imread(save_path)
+    if img is None:
+        return "Error: Image not loaded properly", 400
 
     img = cv2.resize(img, (128, 128))
     img = img / 255.0
