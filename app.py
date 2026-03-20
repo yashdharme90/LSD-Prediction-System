@@ -55,17 +55,17 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    load_models()  # <-- THIS IS THE KEY LINE
+    load_models()  
 
     image_file = request.files['image']
 
     filename = secure_filename(image_file.filename)
 
-    # 1️⃣ Filesystem path (for OpenCV)
+    # Filesystem path (for OpenCV)
     save_path = os.path.join("static", "uploads", filename)
     image_file.save(save_path)
 
-    # 2️⃣ URL path (for browser)
+    # URL path (for browser)
     image_url = f"/static/uploads/{filename}"
 
     # Read image correctly
