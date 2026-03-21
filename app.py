@@ -56,11 +56,9 @@ def home():
 def predict():
     load_models()
 
-    # ✅ DEBUG (keep this for Render logs)
     print("FORM:", request.form)
     print("FILES:", request.files)
 
-    # ✅ SAFE FILE CHECK
     if 'image' not in request.files:
         return "No image uploaded", 400
 
@@ -71,7 +69,7 @@ def predict():
 
     filename = secure_filename(image_file.filename)
 
-    os.makedirs("static/uploads", exist_ok=True)  # ✅ VERY IMPORTANT
+    os.makedirs("static/uploads", exist_ok=True) 
 
     save_path = os.path.join("static/uploads", filename)
     image_file.save(save_path)
