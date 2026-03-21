@@ -52,9 +52,9 @@ def home():
     return render_template('index.html')
 
 
+load_models()
 @app.route('/predict', methods=['POST'])
 def predict():
-    load_models()
 
     print("FORM:", request.form)
     print("FILES:", request.files)
