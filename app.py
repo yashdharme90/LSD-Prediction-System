@@ -20,11 +20,9 @@ MEDICAL_URL = "https://drive.google.com/uc?export=download&id=1ENkUXXKllCi02M2ri
 SCALER_PATH = "medical_scaler.pkl"
 SCALER_URL = "https://drive.google.com/uc?export=download&id=1frkGHa74b1Qm-gx_3HmzCaJWIxhWSLuz"
 
-
 image_model = None
 medical_model = None
 medical_scaler = None
-
 
 def load_models():
     global image_model, medical_model, medical_scaler
@@ -49,7 +47,6 @@ def load_models():
 def health():
     return "OK", 200
 
-
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -57,21 +54,34 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    load_models()  # <-- THIS IS THE KEY LINE
+    load_models()
+
+    # ✅ DEBUG (keep this for Render logs)
+    print("FORM:", request.form)
+    print("FILES:", request.files)
+
+    # ✅ SAFE FILE CHECK
+    if 'image' not in request.files:
+        return "No image uploaded", 400
 
     image_file = request.files['image']
 
+    if image_file.filename == '':
+        return "No selected file", 400
+
     filename = secure_filename(image_file.filename)
 
-    # 1️⃣ Filesystem path (for OpenCV)
-    save_path = os.path.join("static", "uploads", filename)
+    os.makedirs("static/uploads", exist_ok=True)  # ✅ VERY IMPORTANT
+
+    save_path = os.path.join("static/uploads", filename)
     image_file.save(save_path)
 
-    # 2️⃣ URL path (for browser)
     image_url = f"/static/uploads/{filename}"
 
-    # Read image correctly
-    img = cv2.imread(save_path)
+    img = cv2.imdecode(
+    np.fromfile(save_path, dtype=np.uint8),
+    cv2.IMREAD_COLOR
+)
 
     img = cv2.resize(img, (128, 128))
     img = img / 255.0
@@ -79,7 +89,7 @@ def predict():
 
     preds_img = image_model.predict(img)
 
-    temp = float(request.form['Temperature'])
+    temp = float(request.form.get('Temperature', 0))
 
     swell = 1.0 if request.form['Swelling'].lower() == "yes" else 0.0
     nasal = 1.0 if request.form['Nasal_Discharge'].lower() == "yes" else 0.0
