@@ -12,7 +12,11 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
+<<<<<<< HEAD
 os.makedirs("static/uploads", exist_ok=True)
+=======
+
+>>>>>>> 29c1e8598c0a363fbb166a0c1cf5feb1c442a48f
 
 IMAGE_MODEL_PATH = "image_model.h5"
 IMAGE_URL = "https://drive.google.com/uc?export=download&id=1oGJOXkSVakBCLJio1ZfF9w8pYQLtjaoP"
@@ -22,6 +26,7 @@ MEDICAL_URL = "https://drive.google.com/uc?export=download&id=1ENkUXXKllCi02M2ri
 
 SCALER_PATH = "medical_scaler.pkl"
 SCALER_URL = "https://drive.google.com/uc?export=download&id=1frkGHa74b1Qm-gx_3HmzCaJWIxhWSLuz"
+
 
 image_model = None
 medical_model = None
@@ -52,19 +57,42 @@ def home():
     return render_template("index.html")
 
 
+<<<<<<< HEAD
 @app.route("/predict", methods=["POST"])
 def predict():
     load_models()
+=======
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    load_models()  # <-- THIS IS THE KEY LINE
+
+    image_file = request.files['image']
+>>>>>>> 29c1e8598c0a363fbb166a0c1cf5feb1c442a48f
 
     image_file = request.files["image"]
     filename = secure_filename(image_file.filename)
 
+<<<<<<< HEAD
     save_path = os.path.join("static/uploads", filename)
     image_file.save(save_path)
 
+=======
+    # 1️⃣ Filesystem path (for OpenCV)
+    save_path = os.path.join("static", "uploads", filename)
+    image_file.save(save_path)
+
+    # 2️⃣ URL path (for browser)
+>>>>>>> 29c1e8598c0a363fbb166a0c1cf5feb1c442a48f
     image_url = f"/static/uploads/{filename}"
 
     img = cv2.imread(save_path)
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> 29c1e8598c0a363fbb166a0c1cf5feb1c442a48f
     img = cv2.resize(img, (128, 128))
     img = img / 255.0
     img = np.expand_dims(img, axis=0)
@@ -96,9 +124,12 @@ def predict():
 
     med_scaled = medical_scaler.transform(med_input)
     preds_med = medical_model.predict(med_scaled)
+<<<<<<< HEAD
 
     preds_img = preds_img.reshape(-1)
     preds_med = preds_med.reshape(-1)
+=======
+>>>>>>> 29c1e8598c0a363fbb166a0c1cf5feb1c442a48f
 
     fused = 0.3 * preds_img + 0.7 * preds_med
 
@@ -116,4 +147,8 @@ def predict():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
+<<<<<<< HEAD
     app.run(host="0.0.0.0", port=port)
+=======
+    app.run(host="0.0.0.0", port=port)
+>>>>>>> 29c1e8598c0a363fbb166a0c1cf5feb1c442a48f
