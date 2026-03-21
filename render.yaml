@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 services:
   - type: web
     name: lsd-prediction
@@ -6,17 +5,3 @@ services:
     plan: free
     buildCommand: "pip install -r requirements.txt"
     startCommand: "gunicorn app:app"
-    envVars:
-      - key: PYTHON_VERSION
-=======
-services:
-  - type: web
-    name: lsd-prediction
-    env: python
-    plan: free
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn app:app"
-    envVars:
-      - key: PYTHON_VERSION
->>>>>>> 4b364f2b9f61011ccf790446bbea5eb8abcc44d5
-        value: 3.10.13

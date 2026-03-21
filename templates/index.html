@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,7 +16,7 @@
   <h1>🐄 Lumpy Skin Disease Prediction System</h1>
 </header>
 
-<!-- FORM CARD -->
+<!-- FORM -->
 <div class="card">
 <form action="/predict" method="POST" enctype="multipart/form-data">
 
@@ -84,7 +83,7 @@
 {% set conf = prediction.split('(')[1].replace(')','') | float %}
 
 <div class="conf-container">
-  <div class="conf-bar" style="width: {{ conf * 100 }}%;">
+  <div class="conf-bar" data-width="{{ (conf * 100)|round(2) }}">
     Confidence {{ (conf * 100)|round(2) }}%
   </div>
 </div>
@@ -101,114 +100,12 @@
 
 </div>
 
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
-
-</body>
-=======
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>LSD AI Detection</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-
-<body>
-
-<div class="main">
-
-<header>
-  <h1>🐄 Lumpy Skin Disease Prediction System</h1>
-</header>
-
-<!-- FORM CARD -->
-<div class="card">
-<form action="/predict" method="POST" enctype="multipart/form-data">
-
-<label>Upload Image</label>
-<input type="file" name="image" required>
-
-<label>Temperature (°F)</label>
-<input type="number" step="0.1" name="Temperature" required>
-
-<label>Swelling</label>
-<select name="Swelling" required>
-<option value="" disabled selected>Select</option>
-<option>Yes</option>
-<option>No</option>
-</select>
-
-<label>Nasal Discharge</label>
-<select name="Nasal_Discharge" required>
-<option value="" disabled selected>Select</option>
-<option>Yes</option>
-<option>No</option>
-</select>
-
-<label>Eye Discharge</label>
-<select name="Eye_Discharge" required>
-<option value="" disabled selected>Select</option>
-<option>Yes</option>
-<option>No</option>
-</select>
-
-<label>Skin Nodules</label>
-<select name="Skin_Nodules" required>
-<option value="" disabled selected>Select</option>
-<option>Yes</option>
-<option>No</option>
-</select>
-
-<label>Appetite Level</label>
-<select name="Appetite_Level" required>
-<option value="" disabled selected>Select</option>
-<option>High</option>
-<option>Normal</option>
-<option>Low</option>
-</select>
-
-<button type="submit">🚀 Predict</button>
-
-<div class="loading" id="loading">
-  <div class="spinner"></div>
-  <p>Analyzing...</p>
-</div>
-
-</form>
-</div>
-
-<!-- RESULT -->
-{% if prediction %}
-<div class="card">
-
-<div class="result {% if 'Positive' in prediction %}positive{% else %}negative{% endif %}">
-  {{ prediction }}
-</div>
-
-{% set conf = prediction.split('(')[1].replace(')','') | float %}
-
-<div class="conf-container">
-  <div class="conf-bar" style="width: {{ conf * 100 }}%;">
-    Confidence {{ (conf * 100)|round(2) }}%
-  </div>
-</div>
-
-{% if image_path %}
-<div class="image-box">
-  <h3>Uploaded Image</h3>
-  <img src="{{ image_path }}">
-</div>
-{% endif %}
-
-</div>
-{% endif %}
-
-</div>
+<!-- FOOTER -->
+<footer>
+  © 2025 LSD AI System | Developed by Yash Dharme
+</footer>
 
 <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
 </body>
->>>>>>> 4b364f2b9f61011ccf790446bbea5eb8abcc44d5
 </html>
