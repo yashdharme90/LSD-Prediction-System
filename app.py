@@ -11,6 +11,8 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
+
+
 IMAGE_MODEL_PATH = "image_model.h5"
 IMAGE_URL = "https://drive.google.com/uc?export=download&id=1oGJOXkSVakBCLJio1ZfF9w8pYQLtjaoP"
 
@@ -20,9 +22,11 @@ MEDICAL_URL = "https://drive.google.com/uc?export=download&id=1ENkUXXKllCi02M2ri
 SCALER_PATH = "medical_scaler.pkl"
 SCALER_URL = "https://drive.google.com/uc?export=download&id=1frkGHa74b1Qm-gx_3HmzCaJWIxhWSLuz"
 
+
 image_model = None
 medical_model = None
 medical_scaler = None
+
 
 def load_models():
     global image_model, medical_model, medical_scaler
@@ -47,39 +51,32 @@ def load_models():
 def health():
     return "OK", 200
 
+
 @app.route('/')
 def home():
     return render_template('index.html')
 
 
-load_models()
+
 @app.route('/predict', methods=['POST'])
 def predict():
-
-    print("FORM:", request.form)
-    print("FILES:", request.files)
-
-    if 'image' not in request.files:
-        return "No image uploaded", 400
+    load_models()  # <-- THIS IS THE KEY LINE
 
     image_file = request.files['image']
 
-    if image_file.filename == '':
-        return "No selected file", 400
-
     filename = secure_filename(image_file.filename)
 
-    os.makedirs("static/uploads", exist_ok=True) 
-
-    save_path = os.path.join("static/uploads", filename)
+    # 1️⃣ Filesystem path (for OpenCV)
+    save_path = os.path.join("static", "uploads", filename)
     image_file.save(save_path)
 
+    # 2️⃣ URL path (for browser)
     image_url = f"/static/uploads/{filename}"
 
-    img = cv2.imdecode(
-    np.fromfile(save_path, dtype=np.uint8),
-    cv2.IMREAD_COLOR
-)
+    # Read image correctly
+    img = cv2.imread(save_path)
+
+
 
     img = cv2.resize(img, (128, 128))
     img = img / 255.0
@@ -87,7 +84,7 @@ def predict():
 
     preds_img = image_model.predict(img)
 
-    temp = float(request.form.get('Temperature', 0))
+    temp = float(request.form['Temperature'])
 
     swell = 1.0 if request.form['Swelling'].lower() == "yes" else 0.0
     nasal = 1.0 if request.form['Nasal_Discharge'].lower() == "yes" else 0.0
@@ -125,6 +122,7 @@ def predict():
         prediction=f"{result} ({prob:.2f})",
         image_path=image_url
     )
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
