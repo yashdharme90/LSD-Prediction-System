@@ -1,3 +1,7 @@
+import os
+os.environ["KERAS_BACKEND"] = "tensorflow"
+os.environ["TF_USE_LEGACY_KERAS"] = "1"
+
 from flask import Flask, render_template, request
 import tensorflow as tf
 import keras
