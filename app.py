@@ -1,11 +1,12 @@
 from flask import Flask, render_template, request
-from keras.models import load_model
+import tensorflow as tf
 import keras
 import numpy as np
 import joblib
 import cv2
 import os
 import gdown
+from werkzeug.utils import secure_filename
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
@@ -33,11 +34,19 @@ def load_models():
     global image_model, medical_model, medical_scaler
 
     if image_model is None:
-        print("Loading models...")
+        print("Downloading models...")
 
         if not os.path.exists(IMAGE_MODEL_PATH):
             gdown.download(IMAGE_URL, IMAGE_MODEL_PATH, quiet=False)
-        image_model = load_model(IMAGE_MODEL_PATH, compile=False)
+
+        print("Loading models...")
+
+        import tensorflow as tf
+        image_model = tf.keras.models.load_model(
+            IMAGE_MODEL_PATH,
+            compile=False,
+            safe_mode=False
+        )
 
         if not os.path.exists(MEDICAL_MODEL_PATH):
             gdown.download(MEDICAL_URL, MEDICAL_MODEL_PATH, quiet=False)
