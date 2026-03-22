@@ -1,11 +1,11 @@
 from flask import Flask, render_template, request
-from tensorflow.keras.models import load_model
+from keras.models import load_model
+import keras
 import numpy as np
 import joblib
 import cv2
 import os
 import gdown
-from werkzeug.utils import secure_filename
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
