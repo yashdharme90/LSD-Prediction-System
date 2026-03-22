@@ -12,7 +12,7 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
-os.makedirs("static/uploads", exist_ok=True)
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 IMAGE_MODEL_PATH = "image_model.h5"
 IMAGE_URL = "https://drive.google.com/uc?export=download&id=1oGJOXkSVakBCLJio1ZfF9w8pYQLtjaoP"
@@ -48,33 +48,42 @@ def load_models():
         medical_scaler = joblib.load(SCALER_PATH)
 
 
+@app.route("/health")
+def health():
+    return "OK", 200
+
+
 @app.route("/")
 def home():
     return render_template("index.html")
 
 
-@app.route("/predict", methods=["POST"])
+@app.route('/predict', methods=['POST'])
 def predict():
     load_models()
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    load_models() 
+    # -------- IMAGE ----------
+    if 'image' not in request.files:
+        return "No image uploaded"
 
     image_file = request.files['image']
 
-    image_file = request.files["image"]
+    if image_file.filename == "":
+        return "No file selected"
+
     filename = secure_filename(image_file.filename)
+    save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
-    save_path = os.path.join("static/uploads", filename)
-    image_file.save(save_path)
-
-    save_path = os.path.join("static", "uploads", filename)
     image_file.save(save_path)
 
     image_url = f"/static/uploads/{filename}"
 
+    # Read image
     img = cv2.imread(save_path)
+
+    # IMPORTANT FIX
+    if img is None:
+        return "Invalid image. Please upload valid image file."
 
     img = cv2.resize(img, (128, 128))
     img = img / 255.0
@@ -82,6 +91,7 @@ def predict():
 
     preds_img = image_model.predict(img)
 
+    # -------- MEDICAL ----------
     temp = float(request.form["Temperature"])
     swell = 1.0 if request.form["Swelling"].lower() == "yes" else 0.0
     nasal = 1.0 if request.form["Nasal_Discharge"].lower() == "yes" else 0.0
@@ -108,6 +118,7 @@ def predict():
     med_scaled = medical_scaler.transform(med_input)
     preds_med = medical_model.predict(med_scaled)
 
+    # -------- FUSION ----------
     preds_img = preds_img.reshape(-1)
     preds_med = preds_med.reshape(-1)
 
@@ -124,7 +135,7 @@ def predict():
         image_path=image_url
     )
 
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
     app.run(host="0.0.0.0", port=port)
