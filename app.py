@@ -14,8 +14,8 @@ app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-IMAGE_MODEL_PATH = "image_model.h5"
-IMAGE_URL = "https://drive.google.com/uc?export=download&id=1oGJOXkSVakBCLJio1ZfF9w8pYQLtjaoP"
+IMAGE_MODEL_PATH = "image_model.keras"
+IMAGE_URL = "https://drive.google.com/uc?export=download&id=1pcuAvoEOUaLa_UxG2ziWKgUkCXjm_Qko"
 
 MEDICAL_MODEL_PATH = "medical_model.pkl"
 MEDICAL_URL = "https://drive.google.com/uc?export=download&id=1ENkUXXKllCi02M2ri72qfhC1Shuaz5ZB"
