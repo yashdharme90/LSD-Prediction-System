@@ -2,6 +2,7 @@ import os
 os.environ["TF_USE_LEGACY_KERAS"] = "1"
 
 from flask import Flask, render_template, request
+import keras
 import tensorflow as tf
 import numpy as np
 import joblib
@@ -43,7 +44,7 @@ def load_models():
         print("Loading models...")
 
         import tensorflow as tf
-        image_model = tf.keras.models.load_model(
+        image_model = keras.models.load_model(
             IMAGE_MODEL_PATH,
             compile=False
         )
