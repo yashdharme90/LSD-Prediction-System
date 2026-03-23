@@ -19,8 +19,8 @@ app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-IMAGE_MODEL_PATH = "image_model.keras"
-IMAGE_URL = "https://drive.google.com/uc?export=download&id=1pcuAvoEOUaLa_UxG2ziWKgUkCXjm_Qko"
+IMAGE_MODEL_PATH = "image_model_tf.keras"
+IMAGE_URL = "https://drive.google.com/uc?export=download&id=1wpo3GtQp72rCj3XQ3xIGUk750RcRfH0n"
 
 MEDICAL_MODEL_PATH = "medical_model.pkl"
 MEDICAL_URL = "https://drive.google.com/uc?export=download&id=1ENkUXXKllCi02M2ri72qfhC1Shuaz5ZB"
@@ -48,8 +48,7 @@ def load_models():
         import tensorflow as tf
         image_model = tf.keras.models.load_model(
             IMAGE_MODEL_PATH,
-            compile=False,
-            safe_mode=False
+            compile=False
         )
 
         if not os.path.exists(MEDICAL_MODEL_PATH):
@@ -75,7 +74,6 @@ def home():
 def predict():
     load_models()
 
-    # -------- IMAGE ----------
     if 'image' not in request.files:
         return "No image uploaded"
 
@@ -91,10 +89,8 @@ def predict():
 
     image_url = f"/static/uploads/{filename}"
 
-    # Read image
     img = cv2.imread(save_path)
 
-    # IMPORTANT FIX
     if img is None:
         return "Invalid image. Please upload valid image file."
 
@@ -104,7 +100,6 @@ def predict():
 
     preds_img = image_model.predict(img)
 
-    # -------- MEDICAL ----------
     temp = float(request.form["Temperature"])
     swell = 1.0 if request.form["Swelling"].lower() == "yes" else 0.0
     nasal = 1.0 if request.form["Nasal_Discharge"].lower() == "yes" else 0.0
@@ -131,7 +126,6 @@ def predict():
     med_scaled = medical_scaler.transform(med_input)
     preds_med = medical_model.predict(med_scaled)
 
-    # -------- FUSION ----------
     preds_img = preds_img.reshape(-1)
     preds_med = preds_med.reshape(-1)
 
